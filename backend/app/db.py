@@ -54,7 +54,7 @@ def migrate() -> None:
                     phone        TEXT        NOT NULL,
                     phone_digits TEXT        NOT NULL UNIQUE,
                     party_size   SMALLINT    NOT NULL CHECK (party_size BETWEEN 1 AND 5),
-                    travelling   TEXT        NOT NULL CHECK (travelling IN ('Yes', 'No')),
+                    travelling   TEXT        CHECK (travelling IN ('Yes', 'No')),
                     created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
                     updated_at   TIMESTAMPTZ NOT NULL DEFAULT now()
                 )
@@ -66,6 +66,8 @@ def migrate() -> None:
         conn.execute(
             sql.SQL("ALTER TABLE {t} ADD CONSTRAINT rsvps_party_size_check CHECK (party_size BETWEEN 1 AND 5)").format(t=TABLE)
         )
+        # The "travelling from outside Surat" question was dropped from the form; keep old answers, allow NULL.
+        conn.execute(sql.SQL("ALTER TABLE {t} ALTER COLUMN travelling DROP NOT NULL").format(t=TABLE))
 
 
 def ping() -> None:
@@ -94,7 +96,8 @@ def validate_rsvp(body: Any) -> tuple[list[str], dict[str, Any], str | None]:
 
     name = re.sub(r"\s+", " ", str(body.get("name") or "")).strip()
     phone = str(body.get("phone") or "").strip()
-    travelling = str(body.get("travelling") or "")
+    travelling = body.get("travelling")
+    travelling = None if travelling in (None, "") else str(travelling)
     try:
         guests = int(body.get("guests"))
     except (TypeError, ValueError):
@@ -109,9 +112,9 @@ def validate_rsvp(body: Any) -> tuple[list[str], dict[str, Any], str | None]:
     if not PHONE_RE.match(phone) or len(phone) > 20 or not (10 <= len(digits) <= 15):
         errors.append("Please add a phone number with at least 10 digits.")
     if not (1 <= guests <= MAX_PARTY):
-        errors.append("Please choose who is attending.")
-    if travelling not in ("Yes", "No"):
-        errors.append("Please tell us whether you are travelling from outside Surat.")
+        errors.append("Please choose how many people are attending.")
+    if travelling is not None and travelling not in ("Yes", "No"):
+        errors.append("Travelling must be Yes or No.")
 
     previous = body.get("previousPhone")
     previous_digits = normalise_phone(previous) if previous else None
@@ -174,7 +177,6 @@ def list_rsvps() -> dict[str, Any]:
     stats = {
         "count": len(rows),
         "headcount": sum(int(r["guests"] or 1) for r in rows),
-        "travelling": sum(1 for r in rows if r["travelling"] == "Yes"),
     }
     return {"rsvps": rows, "stats": stats}
 

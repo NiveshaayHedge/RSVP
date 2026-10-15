@@ -16,7 +16,7 @@ export const CALENDAR_URL =
   }).toString()
 
 export const PARTY_OPTIONS = [
-  [1, 'Just me'],
+  [1, 'Myself'],
   [2, 'Me + 1'],
   [3, 'Me + 2'],
   [4, 'Me + 3'],

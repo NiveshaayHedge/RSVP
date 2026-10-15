@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api.js'
-import Closing from '../components/Closing.jsx'
+import Corners from '../components/Corners.jsx'
 
 const fmt = (iso) =>
   new Date(iso).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
@@ -43,12 +43,12 @@ export default function AdminPage() {
         </div>
       </header>
 
-      <main className="in adminMain">
-        {view === 'login' && <Login onSuccess={() => setView('dash')} />}
-        {view === 'dash' && <GuestList onUnauthenticated={() => setView('login')} />}
-      </main>
-
-      <Closing />
+      <div className="lower adminLower">
+        <main className="in adminMain">
+          {view === 'login' && <Login onSuccess={() => setView('dash')} />}
+          {view === 'dash' && <GuestList onUnauthenticated={() => setView('login')} />}
+        </main>
+      </div>
     </div>
   )
 }
@@ -80,8 +80,9 @@ function Login({ onSuccess }) {
   return (
     <section className="loginWrap">
       <div className="card">
+        <Corners />
         <div className="role">Admin access</div>
-        <h3>Guest list for 20 October</h3>
+        <h3>Guest list for 20th October</h3>
         <p className="hint">Enter the admin password to see who has RSVP'd.</p>
         <form onSubmit={submit} noValidate>
           <div className="field">
@@ -113,7 +114,7 @@ function Login({ onSuccess }) {
 
 function GuestList({ onUnauthenticated }) {
   const [rows, setRows] = useState([])
-  const [stats, setStats] = useState({ count: 0, headcount: 0, travelling: 0 })
+  const [stats, setStats] = useState({ count: 0, headcount: 0 })
   const [loaded, setLoaded] = useState(false)
   const [query, setQuery] = useState('')
   const [note, setNote] = useState({ text: '', bad: false })
@@ -161,7 +162,14 @@ function GuestList({ onUnauthenticated }) {
       <div className="slideHead">
         <div className="kicker">Only visible to you</div>
       </div>
-      <h2>Guest list</h2>
+      <h2 className="lux">
+        Guest <em className="foil">list.</em>
+      </h2>
+      <div className="orn dark" aria-hidden="true">
+        <span />
+        <i />
+        <span />
+      </div>
       <p className="sub">Everyone who has responded to the invitation. The list refreshes on its own every 30 seconds.</p>
 
       <div className="stats" aria-live="polite">
@@ -173,13 +181,10 @@ function GuestList({ onUnauthenticated }) {
           <b>{stats.headcount}</b>
           <span>Expected headcount</span>
         </div>
-        <div>
-          <b>{stats.travelling}</b>
-          <span>Travelling in</span>
-        </div>
       </div>
 
       <div className="guests card">
+        <Corners />
         <div className="tools">
           <div className="field">
             <label htmlFor="q">Search</label>
@@ -202,7 +207,6 @@ function GuestList({ onUnauthenticated }) {
                 <th>Name</th>
                 <th>Phone</th>
                 <th>Party</th>
-                <th>Travelling</th>
                 <th>Received</th>
                 <th>
                   <span className="srOnly">Actions</span>
@@ -212,7 +216,7 @@ function GuestList({ onUnauthenticated }) {
             <tbody>
               {list.length === 0 ? (
                 <tr className="empty">
-                  <td colSpan={6}>
+                  <td colSpan={5}>
                     {rows.length ? 'No guests match that search.' : loaded ? "No RSVPs yet. They'll appear here as guests respond." : 'Loading…'}
                   </td>
                 </tr>
@@ -224,9 +228,6 @@ function GuestList({ onUnauthenticated }) {
                       <a href={`tel:${String(r.phone).replace(/[^\d+]/g, '')}`}>{r.phone}</a>
                     </td>
                     <td data-label="Party">{r.guests}</td>
-                    <td data-label="Travelling">
-                      <span className={`pill${r.travelling === 'Yes' ? ' yes' : ''}`}>{r.travelling}</span>
-                    </td>
                     <td data-label="Received">
                       <time dateTime={r.updated_at} title={r.created_at !== r.updated_at ? `First RSVP ${fmt(r.created_at)}` : undefined}>
                         {fmt(r.updated_at)}

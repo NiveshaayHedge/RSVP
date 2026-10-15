@@ -177,9 +177,9 @@ def admin_csv(request: Request):
         return error("Please sign in.", 401)
     buf = io.StringIO()
     writer = csv.writer(buf, lineterminator="\r\n")
-    writer.writerow(["Name", "Phone", "Party", "Travelling from outside Surat", "First RSVP (IST)", "Last updated (IST)"])
+    writer.writerow(["Name", "Phone", "Party", "First RSVP (IST)", "Last updated (IST)"])
     for r in db.list_rsvps()["rsvps"]:
-        writer.writerow([_csv_safe(r["name"]), _csv_safe(r["phone"]), r["guests"], r["travelling"], _ist(r["created_at"]), _ist(r["updated_at"])])
+        writer.writerow([_csv_safe(r["name"]), _csv_safe(r["phone"]), r["guests"], _ist(r["created_at"]), _ist(r["updated_at"])])
     return Response(
         "﻿" + buf.getvalue(),
         media_type="text/csv; charset=utf-8",

@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { api } from '../api.js'
+import { burst } from '../effects.js'
 import { PARTY_OPTIONS } from '../event.js'
 
 // The guest's own RSVP is remembered on this device so "Change my RSVP" can reopen it.
@@ -17,8 +18,7 @@ function formFrom(saved) {
   return {
     name: saved?.name || '',
     phone: saved?.phone || '',
-    guests: String(saved?.guests || 1),
-    travel: saved?.travelling || '',
+    guests: saved?.guests ? String(saved.guests) : '',
   }
 }
 
@@ -29,6 +29,9 @@ export default function RsvpForm() {
   const [error, setError] = useState('')
   const [sending, setSending] = useState(false)
   const nameRef = useRef(null)
+  const phoneRef = useRef(null)
+  const guestsRef = useRef(null)
+  const submitRef = useRef(null)
 
   const update = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
 
@@ -43,19 +46,22 @@ export default function RsvpForm() {
     }
     if (phone.replace(/\D/g, '').length < 10) {
       setError('Please add a phone number with at least 10 digits.')
+      phoneRef.current?.focus()
       return
     }
-    if (!form.travel) {
-      setError('Please tell us whether you are travelling from outside Surat.')
+    if (!form.guests) {
+      setError('Please choose how many people are attending.')
+      guestsRef.current?.focus()
       return
     }
     setError('')
+    burst(submitRef.current)
     setSending(true)
     try {
-      const payload = { name, phone, guests: Number(form.guests), travelling: form.travel }
+      const payload = { name, phone, guests: Number(form.guests) }
       if (saved?.phone) payload.previousPhone = saved.phone
       await api.submitRsvp(payload)
-      const next = { name, phone, guests: Number(form.guests), travelling: form.travel, savedAt: new Date().toISOString() }
+      const next = { name, phone, guests: Number(form.guests), savedAt: new Date().toISOString() }
       try {
         localStorage.setItem(KEY, JSON.stringify(next))
       } catch {
@@ -117,6 +123,7 @@ export default function RsvpForm() {
             Phone <span className="req">*</span>
           </label>
           <input
+            ref={phoneRef}
             type="tel"
             id="phone"
             name="phone"
@@ -129,8 +136,13 @@ export default function RsvpForm() {
           />
         </div>
         <div className="field">
-          <label htmlFor="guests">Attending</label>
-          <select id="guests" name="guests" value={form.guests} onChange={update('guests')}>
+          <label htmlFor="guests">
+            Attending <span className="req">*</span>
+          </label>
+          <select ref={guestsRef} id="guests" name="guests" value={form.guests} onChange={update('guests')}>
+            <option value="" disabled>
+              Select
+            </option>
             {PARTY_OPTIONS.map(([value, label]) => (
               <option key={value} value={value}>
                 {label}
@@ -139,22 +151,11 @@ export default function RsvpForm() {
           </select>
         </div>
       </div>
-      <fieldset>
-        <div className="legend">
-          Travelling from outside Surat? <span className="req">*</span>
-        </div>
-        <div className="seg">
-          <input type="radio" id="tY" name="travel" value="Yes" checked={form.travel === 'Yes'} onChange={update('travel')} />
-          <label htmlFor="tY">Yes</label>
-          <input type="radio" id="tN" name="travel" value="No" checked={form.travel === 'No'} onChange={update('travel')} />
-          <label htmlFor="tN">No</label>
-        </div>
-      </fieldset>
       <div className="err" role="alert">
         {error}
       </div>
       <div>
-        <button className="btn" type="submit" disabled={sending}>
+        <button ref={submitRef} className="btn" type="submit" disabled={sending}>
           {sending ? 'Sending…' : 'Send RSVP →'}
         </button>
       </div>

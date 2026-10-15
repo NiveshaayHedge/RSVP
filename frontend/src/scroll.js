@@ -3,7 +3,7 @@
 
 const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
-export function smoothScrollTo(target, { offset = 12 } = {}) {
+export function smoothScrollTo(target, { offset = 12, onDone } = {}) {
   const el = typeof target === 'string' ? document.getElementById(target) : target
   if (!el) return
 
@@ -15,6 +15,7 @@ export function smoothScrollTo(target, { offset = 12 } = {}) {
 
   if (reduceMotion || Math.abs(distance) < 2 || typeof requestAnimationFrame !== 'function') {
     window.scrollTo(0, endY)
+    if (onDone) onDone()
     return
   }
 
@@ -28,8 +29,12 @@ export function smoothScrollTo(target, { offset = 12 } = {}) {
   function frame(now) {
     const t = Math.min(1, (now - started) / duration)
     window.scrollTo(0, startY + distance * easeInOutCubic(t))
-    if (t < 1) requestAnimationFrame(frame)
-    else html.style.scrollBehavior = previousBehavior
+    if (t < 1) {
+      requestAnimationFrame(frame)
+    } else {
+      html.style.scrollBehavior = previousBehavior
+      if (onDone) onDone()
+    }
   }
   requestAnimationFrame(frame)
 }
