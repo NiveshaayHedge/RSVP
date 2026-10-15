@@ -1,6 +1,7 @@
 import RsvpForm from '../components/RsvpForm.jsx'
 import Closing from '../components/Closing.jsx'
 import { ADDRESS_LINES, CALENDAR_URL, MAPS_URL } from '../event.js'
+import { smoothScrollTo } from '../scroll.js'
 
 export default function InvitePage() {
   return (
@@ -21,7 +22,14 @@ export default function InvitePage() {
               You've been part of our journey. Join us on Tuesday, 20 October for an evening of conversation as we open the
               doors to our new home in Vesu, Surat.
             </p>
-            <a className="btn" href="#rsvp-form">
+            <a
+              className="btn"
+              href="#rsvp-form"
+              onClick={(e) => {
+                e.preventDefault()
+                smoothScrollTo('rsvp-form')
+              }}
+            >
               RSVP for 20 October →
             </a>
           </div>
