@@ -1,0 +1,15 @@
+# secrets
+.env
+
+# python
+backend/.venv/
+__pycache__/
+*.pyc
+
+# node / vite
+frontend/node_modules/
+frontend/dist/
+
+# misc
+.DS_Store
+npm-debug.log*
