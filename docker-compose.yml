@@ -1,0 +1,11 @@
+# docker compose up -d --build
+# The database is external (set DB_* in .env); only the web app runs here.
+services:
+  web:
+    build: .
+    image: niveshaay-rsvp
+    container_name: niveshaay-rsvp
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"

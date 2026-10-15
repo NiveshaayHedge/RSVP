@@ -43,6 +43,30 @@ npm run dev            # http://localhost:5173, proxies /api to the backend on :
 
 Run `npm run build` again before deploying so the backend serves the latest build.
 
+## Hosting with Docker
+
+The `Dockerfile` builds the React app and serves it with the Python backend from one image.
+The database stays external (AWS Lightsail), so only the web app runs in the container.
+
+```bash
+docker build -t niveshaay-rsvp .
+docker run -d --name rsvp --restart unless-stopped --env-file .env -p 3000:3000 niveshaay-rsvp
+```
+
+or with Compose:
+
+```bash
+docker compose up -d --build
+```
+
+Notes
+
+- The image contains no secrets; pass them with `--env-file .env` (or `env_file` in Compose).
+- The container listens on `PORT` (default 3000). Behind nginx, Caddy or a load balancer set
+  `TRUST_PROXY=true`, and on HTTPS set `COOKIE_SECURE=true`.
+- A health check hits `/api/health` every 30 seconds; `docker ps` shows the status.
+- Logs: `docker logs -f rsvp`.
+
 ## Configuration (`.env`)
 
 | Variable | Purpose |
