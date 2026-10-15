@@ -21,7 +21,7 @@ export default function InvitePage() {
               You've been part of our journey. Join us on Tuesday, 20 October for an evening of conversation as we open the
               doors to our new home in Vesu, Surat.
             </p>
-            <a className="btn" href="#rsvp">
+            <a className="btn" href="#rsvp-form">
               RSVP for 20 October →
             </a>
           </div>
@@ -108,7 +108,7 @@ export default function InvitePage() {
               </div>
             </div>
 
-            <div className="card">
+            <div className="card" id="rsvp-form">
               <div className="role">RSVP · 20 October 2026</div>
               <h3>Reserve your place</h3>
               <RsvpForm />
